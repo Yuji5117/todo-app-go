@@ -1,4 +1,4 @@
-module example.com/todo
+module github.com/Yuji5117/todo-app-go
 
 go 1.21.3
 
