@@ -1,15 +1,29 @@
 package main
 
 import (
-	"fmt"
   "net/http"
+	"github.com/Yuji5117/todo-app-go/domain/entity"
+	"github.com/labstack/echo/v4"
 )
 
-func handler(w http.ResponseWriter , r *http.Request) {
-	fmt.Fprint(w, "Hell Wor")
+func getTasks(c echo.Context) error {
+	var tasks [3]entity.Task = [3]entity.Task{entity.NewTask("散歩"), entity.NewTask("掃除"), entity.NewTask("宿題")}
+	return c.JSON(http.StatusOK, tasks)
 }
 
+func saveTask(c echo.Context) error {
+	title := c.FormValue("title")
+	task := entity.NewTask(title)
+	return c.JSON(http.StatusCreated, task)
+}
+
+
 func main()  {
-	http.HandleFunc("/", handler)
-	http.ListenAndServe(":8080", nil)
+	e := echo.New()
+	e.GET("/tasks", getTasks)
+	e.POST("/tasks", saveTask)
+
+
+	e.Logger.Fatal(e.Start(":8080"))
+
 }
