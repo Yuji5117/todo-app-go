@@ -2,8 +2,12 @@ package main
 
 import (
   "net/http"
+	"log"
+	"database/sql"
+
 	"github.com/Yuji5117/todo-app-go/domain/entity"
 	"github.com/labstack/echo/v4"
+	_ "github.com/go-sql-driver/mysql"
 )
 
 func getTasks(c echo.Context) error {
@@ -19,6 +23,12 @@ func saveTask(c echo.Context) error {
 
 
 func main()  {
+	db, err := sql.Open("mysql", "user:12345678@tcp(127.0.0.1:3306)/todo")
+	if err != nil {
+		log.Fatalf("main sql.Open error err:%v", err)
+	}
+	defer db.Close()
+
 	e := echo.New()
 	e.GET("/tasks", getTasks)
 	e.POST("/tasks", saveTask)
