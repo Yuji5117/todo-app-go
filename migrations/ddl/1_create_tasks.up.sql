@@ -1,0 +1,9 @@
+CREATE TABLE `tasks` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(50) NULL,
+    `done` tinyint(1) DEFAULT 0,
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    `deleted_at` DATETIME NULL,
+    PRIMARY KEY (`id`)
+)
