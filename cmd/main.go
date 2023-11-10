@@ -8,7 +8,9 @@ import (
 	"time"
 
 	"github.com/Yuji5117/todo-app-go/domain/entity"
+	"github.com/Yuji5117/todo-app-go/adapter"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -19,7 +21,7 @@ func getTasks(d *sql.DB, c echo.Context) error {
 			panic(err.Error())
 	}
 
-	var tasksResponse []entity.Task
+	var tasksResponse []adapter.TaskDTO
 
 	for tasks.Next() {
 		var task entity.Task
@@ -57,7 +59,9 @@ func getTasks(d *sql.DB, c echo.Context) error {
 				}
 		}
 
-		tasksResponse = append(tasksResponse, task)
+		taskDTO := adapter.TaskDTO{ID: task.ID, Title: task.Title, Done: task.Done}
+
+		tasksResponse = append(tasksResponse, taskDTO)
 	}
 
 	return c.JSON(http.StatusOK, tasksResponse)
@@ -129,6 +133,11 @@ func main()  {
 
 
 	e := echo.New()
+
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"http://localhost:5173"},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+  }))
 	e.GET("/tasks", func(c echo.Context) error { return getTasks(db, c) })
 	e.POST("/tasks", func(c echo.Context) error { return saveTask(db, c) })
 	e.POST("/tasks/:id", func(c echo.Context) error { return updateTask(db, c) })
