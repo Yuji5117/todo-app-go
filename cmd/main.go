@@ -45,7 +45,6 @@ func getTasks(d *sql.DB, c echo.Context) error {
 						fmt.Println("パースに失敗")
 				}
 		}
-		// DeletedAt は NULL が許容される場合
 		if deletedAt.Valid {
 				task.DeletedAt, err = time.Parse("2006-01-02 15:04:05", deletedAt.String)
 				if err != nil {
@@ -58,7 +57,6 @@ func getTasks(d *sql.DB, c echo.Context) error {
 				}
 		}
 
-		fmt.Print("tasks", task)
 		tasksResponse = append(tasksResponse, task)
 	}
 
