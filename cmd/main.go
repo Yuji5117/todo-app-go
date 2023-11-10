@@ -81,6 +81,30 @@ func saveTask(d *sql.DB, c echo.Context) error {
 	return c.JSON(http.StatusCreated, id)
 }
 
+func updateTask(d *sql.DB, c echo.Context) error {
+	id := c.Param("id")
+	title := c.FormValue("title")
+	done := c.FormValue("done")
+
+	doneValue := 0
+	if done == "true" {
+			doneValue = 1
+  }
+
+	_, err := d.Exec(
+		"UPDATE tasks SET title = ?, done = ? WHERE id = ?",
+		title,
+		doneValue,
+		id,
+	)
+	if err != nil {
+		log.Fatalf("insertUser db.Exec error err:%v", err)
+	}
+
+
+	return c.JSON(http.StatusCreated, id)
+}
+
 func main()  {
 	db, err := sql.Open("mysql", "user:12345678@tcp(db:3306)/todo")
 	if err != nil {
@@ -92,6 +116,7 @@ func main()  {
 	e := echo.New()
 	e.GET("/tasks", func(c echo.Context) error { return getTasks(db, c) })
 	e.POST("/tasks", func(c echo.Context) error { return saveTask(db, c) })
+	e.POST("/tasks/:id", func(c echo.Context) error { return updateTask(db, c) })
 
 
 	e.Logger.Fatal(e.Start(":8080"))
