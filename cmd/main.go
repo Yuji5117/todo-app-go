@@ -63,15 +63,26 @@ func getTasks(d *sql.DB, c echo.Context) error {
 	return c.JSON(http.StatusOK, tasksResponse)
 }
 
-// func saveTask(c echo.Context) error {
-// 	title := c.FormValue("title")
-// 	task := entity.NewTask(title)
-// 	return c.JSON(http.StatusCreated, task)
-// }
+func saveTask(d *sql.DB, c echo.Context) error {
+	title := c.FormValue("title")
+	task, err := d.Exec(
+		"INSERT INTO tasks (title) VALUES (?)",
+		title,
+	)
+	if err != nil {
+		log.Fatalf("insertUser db.Exec error err:%v", err)
+	}
 
+	id, err := task.LastInsertId()
+	if err != nil {
+		log.Fatalf("insertUser db.Exec error err:%v", err)
+	}
+
+	return c.JSON(http.StatusCreated, id)
+}
 
 func main()  {
-	db, err := sql.Open("mysql", "user:12345678@tcp(127.0.0.1:3306)/todo")
+	db, err := sql.Open("mysql", "user:12345678@tcp(db:3306)/todo")
 	if err != nil {
 		log.Fatalf("main sql.Open error err:%v", err)
 	}
@@ -80,7 +91,7 @@ func main()  {
 
 	e := echo.New()
 	e.GET("/tasks", func(c echo.Context) error { return getTasks(db, c) })
-	// e.POST("/tasks", saveTask)
+	e.POST("/tasks", func(c echo.Context) error { return saveTask(db, c) })
 
 
 	e.Logger.Fatal(e.Start(":8080"))
