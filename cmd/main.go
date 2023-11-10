@@ -95,9 +95,18 @@ func saveTask(d *sql.DB, c echo.Context) error {
 }
 
 func updateTask(d *sql.DB, c echo.Context) error {
+	var reqBody struct {
+		Title string `json:"title"`
+		Done string `json:"done"`
+	}
+
+	if err := c.Bind(&reqBody); err != nil {
+		log.Fatalf("insertTask db.Exec error err:%v", c)
+	}
+
 	id := c.Param("id")
-	title := c.FormValue("title")
-	done := c.FormValue("done")
+	title := reqBody.Title
+	done := reqBody.Done
 
 	doneValue := 0
 	if done == "true" {
