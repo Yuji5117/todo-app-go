@@ -105,6 +105,21 @@ func updateTask(d *sql.DB, c echo.Context) error {
 	return c.JSON(http.StatusCreated, id)
 }
 
+func deleteTask(d *sql.DB, c echo.Context) error {
+	id := c.Param("id")
+
+	_, err := d.Exec(
+		"DELETE FROM tasks WHERE id = ?",
+		id,
+	)
+	if err != nil {
+		log.Fatalf("insertUser db.Exec error err:%v", err)
+	}
+
+
+	return c.JSON(http.StatusCreated, id)
+}
+
 func main()  {
 	db, err := sql.Open("mysql", "user:12345678@tcp(db:3306)/todo")
 	if err != nil {
@@ -117,6 +132,7 @@ func main()  {
 	e.GET("/tasks", func(c echo.Context) error { return getTasks(db, c) })
 	e.POST("/tasks", func(c echo.Context) error { return saveTask(db, c) })
 	e.POST("/tasks/:id", func(c echo.Context) error { return updateTask(db, c) })
+	e.DELETE("/tasks/:id", func(c echo.Context) error { return deleteTask(db, c) })
 
 
 	e.Logger.Fatal(e.Start(":8080"))
