@@ -15,7 +15,7 @@ import (
 )
 
 func getTasks(d *sql.DB, c echo.Context) error {
-  tasks, err := d.Query("SELECT * FROM tasks")
+  tasks, err := d.Query("SELECT * FROM tasks ORDER BY id DESC")
 	if err != nil {
 			fmt.Println("Err2")
 			panic(err.Error())
@@ -68,18 +68,27 @@ func getTasks(d *sql.DB, c echo.Context) error {
 }
 
 func saveTask(d *sql.DB, c echo.Context) error {
-	title := c.FormValue("title")
+	var reqBody struct {
+		Title string `json:"title"`
+	}
+
+	if err := c.Bind(&reqBody); err != nil {
+		log.Fatalf("insertTask db.Exec error err:%v", c)
+	}
+
+	title := reqBody.Title
+
 	task, err := d.Exec(
 		"INSERT INTO tasks (title) VALUES (?)",
 		title,
 	)
 	if err != nil {
-		log.Fatalf("insertUser db.Exec error err:%v", err)
+		log.Fatalf("insertTask db.Exec error err:%v", err)
 	}
 
 	id, err := task.LastInsertId()
 	if err != nil {
-		log.Fatalf("insertUser db.Exec error err:%v", err)
+		log.Fatalf("insertTask db.Exec error err:%v", err)
 	}
 
 	return c.JSON(http.StatusCreated, id)
