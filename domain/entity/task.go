@@ -5,19 +5,20 @@ import (
 )
 
 type Task struct {
-	ID ID
+	ID int
 	Title string
 	Done bool
 	CreatedAt time.Time
-	UpdateedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt time.Time
 }
 
-func NewTask(title string) Task {
+func NewTask(id int, title string) Task {
 	return Task{
-		ID: NewId(),
+		ID: id,
 		Title: title,
 		Done: false,
 		CreatedAt: time.Now(),
-		UpdateedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 }
