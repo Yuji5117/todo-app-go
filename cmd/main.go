@@ -2,66 +2,29 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"net/http"
-	"time"
+
+	"github.com/Yuji5117/todo-app-go/infra/repository"
 
 	"github.com/Yuji5117/todo-app-go/adapter/presenter"
-	"github.com/Yuji5117/todo-app-go/domain/entity"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func getTasks(d *sql.DB, c echo.Context) error {
-	tasks, err := d.Query("SELECT * FROM tasks ORDER BY id DESC")
+func getTasks(repo *repository.TaskMySQL, c echo.Context) error {
+
+	tasks, err := repo.List()
 	if err != nil {
-		fmt.Println("Err2")
-		panic(err.Error())
+		log.Fatalf("getTask d.List error err:%v", err)
 	}
 
 	var tasksResponse []presenter.TaskDTO
 
-	for tasks.Next() {
-		var task entity.Task
-
-		var createdAt, updatedAt string
-		var deletedAt sql.NullString
-
-		err := tasks.Scan(&task.ID, &task.Title, &task.Done, &createdAt, &updatedAt, &deletedAt)
-		if err != nil {
-			fmt.Println("スキャンが失敗しました。")
-			panic(err.Error())
-		}
-
-		if createdAt != "" {
-			task.CreatedAt, err = time.Parse("2006-01-02 15:04:05", createdAt)
-			if err != nil {
-				fmt.Println("パースに失敗")
-			}
-		}
-		if updatedAt != "" {
-			task.UpdatedAt, err = time.Parse("2006-01-02 15:04:05", updatedAt)
-			if err != nil {
-				fmt.Println("パースに失敗")
-			}
-		}
-		if deletedAt.Valid {
-			task.DeletedAt, err = time.Parse("2006-01-02 15:04:05", deletedAt.String)
-			if err != nil {
-				fmt.Println("deleted_at パースに失敗")
-			}
-		} else {
-			task.DeletedAt, err = time.Parse("2006-01-02 15:04:05", "0000-00-00 00:00:00")
-			if err != nil {
-				fmt.Println("deleted_at パースに失敗")
-			}
-		}
-
-		taskDTO := presenter.TaskDTO{ID: task.ID, Title: task.Title, Done: task.Done}
-
-		tasksResponse = append(tasksResponse, taskDTO)
+	for _, task := range tasks {
+		dto := presenter.TaskDTO{ID: task.ID, Title: task.Title, Done: task.Done}
+		tasksResponse = append(tasksResponse, dto)
 	}
 
 	return c.JSON(http.StatusOK, tasksResponse)
@@ -174,13 +137,15 @@ func main() {
 	}
 	defer db.Close()
 
+	repo := repository.NewTaskMySQL(db)
+
 	e := echo.New()
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:5173"},
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	}))
-	e.GET("/tasks", func(c echo.Context) error { return getTasks(db, c) })
+	e.GET("/tasks", func(c echo.Context) error { return getTasks(repo, c) })
 	e.POST("/tasks", func(c echo.Context) error { return saveTask(db, c) })
 	e.PATCH("/tasks/:id", func(c echo.Context) error { return updateTask(db, c) })
 	e.DELETE("/tasks/:id", func(c echo.Context) error { return deleteTask(db, c) })
