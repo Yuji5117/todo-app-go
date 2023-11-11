@@ -109,6 +109,19 @@ func updateTask(d *sql.DB, c echo.Context) error {
 	title := reqBody.Title
 	done := reqBody.Done
 
+	if title != nil {
+		_, err := d.Exec(
+			"UPDATE tasks SET title = ? WHERE id = ?",
+			title,
+			id,
+		)
+		if err != nil {
+			log.Fatalf("updateTask for title db.Exec error err:%v", err)
+		}
+
+		return c.JSON(http.StatusCreated, id)
+	}
+
 	if done != nil {
 		doneValue := 0
 		if *done == true {
@@ -130,10 +143,11 @@ func updateTask(d *sql.DB, c echo.Context) error {
 	_, err := d.Exec(
 		"UPDATE tasks SET title = ?, done = ? WHERE id = ?",
 		title,
+		done,
 		id,
 	)
 	if err != nil {
-		log.Fatalf("updateTask db.Exec error err:%v", err)
+		log.Fatalf("updateTask for title & done db.Exec error err:%v", err)
 	}
 
 	return c.JSON(http.StatusCreated, id)
@@ -164,7 +178,7 @@ func main() {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:5173"},
-		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
+		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPatch, http.MethodPost, http.MethodDelete},
 	}))
 	e.GET("/tasks", func(c echo.Context) error { return getTasks(db, c) })
 	e.POST("/tasks", func(c echo.Context) error { return saveTask(db, c) })
