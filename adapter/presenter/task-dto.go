@@ -1,4 +1,4 @@
-package adapter
+package presenter
 
 type TaskDTO struct {
 	ID int `json:"id"`

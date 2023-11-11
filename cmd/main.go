@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Yuji5117/todo-app-go/adapter"
+	"github.com/Yuji5117/todo-app-go/adapter/presenter"
 	"github.com/Yuji5117/todo-app-go/domain/entity"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/labstack/echo/v4"
@@ -21,7 +21,7 @@ func getTasks(d *sql.DB, c echo.Context) error {
 		panic(err.Error())
 	}
 
-	var tasksResponse []adapter.TaskDTO
+	var tasksResponse []presenter.TaskDTO
 
 	for tasks.Next() {
 		var task entity.Task
@@ -59,7 +59,7 @@ func getTasks(d *sql.DB, c echo.Context) error {
 			}
 		}
 
-		taskDTO := adapter.TaskDTO{ID: task.ID, Title: task.Title, Done: task.Done}
+		taskDTO := presenter.TaskDTO{ID: task.ID, Title: task.Title, Done: task.Done}
 
 		tasksResponse = append(tasksResponse, taskDTO)
 	}
